@@ -98,6 +98,13 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     super.didUpdateWidget(oldWidget);
     reset();
     createEventsDrawProperties();
+
+    updateMinZoom(0.5);
+  }
+
+  void updateMinZoom(double minZoom) {
+    print('updateMinZoom $minZoom');
+    widget.controller.minZoom = minZoom;
   }
 
   @override
@@ -133,8 +140,6 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     return GestureDetector(
       onScaleStart: (_) => widget.controller.scaleStart(),
       onScaleUpdate: widget.controller.scaleUpdate,
-      onVerticalDragStart: (detail) => {print(detail.localPosition.dx)},
-      onVerticalDragEnd: (detail) => {print('end')},
       child: mainWidget,
     );
   }
@@ -166,19 +171,24 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
               .map((e) => Positioned(
                     top: calculateTopOffset(timeStartObj),
                     left: e * eventWidth,
-                    child: Container(
-                      width: eventWidth,
-                      height: calculateTopOffset(timeEndObj) -
-                          calculateTopOffset(timeStartObj),
-                      child: entry.child,
-                      decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xffcdebef), Color(0xff40798d)],
-                          ),
-                          border: Border.all(
-                              color: const Color(0xffd8eaf3), width: 0.5)),
+                    child: InkWell(
+                      onTap: () {
+                        print('event');
+                      },
+                      child: Container(
+                        width: eventWidth,
+                        height: calculateTopOffset(timeEndObj) -
+                            calculateTopOffset(timeStartObj),
+                        child: entry.child,
+                        decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xffcdebef), Color(0xff40798d)],
+                            ),
+                            border: Border.all(
+                                color: const Color(0xffd8eaf3), width: 0.5)),
+                      ),
                     ),
                   ))
               .toList();
@@ -186,19 +196,28 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
         .toList()
         .expand((element) => element)
         .toList();
-    return Column(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Container(
-            width: double.infinity,
-            color: const Color.fromRGBO(240, 247, 250, 1),
-            child: Stack(
-              children: children,
-            ),
+
+    final height = MediaQuery.of(context).size.height;
+    final isMinScale = calculateHeight() <= height;
+    // widget.controller.minZoom = 0.6;
+
+    return InkWell(
+      onTap: () {
+        print('any');
+      },
+      child: GestureDetector(
+        onVerticalDragStart: isMinScale ? (details) => print(details) : null,
+        onVerticalDragUpdate:
+            isMinScale ? (details) => print(details.localPosition) : null,
+        child: Container(
+          width: double.infinity,
+          // color: const Color.fromRGBO(240, 247, 250, 1),
+          color: Colors.red,
+          child: Stack(
+            children: children,
           ),
-        )
-      ],
+        ),
+      ),
     );
   }
 

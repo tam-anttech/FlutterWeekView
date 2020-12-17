@@ -10,33 +10,36 @@ void main() => runApp(_FlutterWeekViewDemoApp());
 /// The demo material app.
 class _FlutterWeekViewDemoApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'Flutter Week View Demo',
-        initialRoute: '/',
-        routes: {
-          '/': (context) => inScaffold(body: _FlutterWeekViewDemoAppBody()),
-          '/day-view': (context) => inScaffold(
-                title: 'Demo day view',
-                body: _DemoDayView(),
-              ),
-          '/week-view': (context) => inScaffold(
-                title: 'Demo week view',
-                body: _DemoWeekView(),
-              ),
-          '/dynamic-day-view': (context) => _DynamicDayView(),
-        },
-      );
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Week View Demo',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => inScaffold(body: _FlutterWeekViewDemoAppBody()),
+        '/day-view': (context) => inScaffold(
+              title: 'Demo day view',
+              body: _DemoDayView(),
+            ),
+        '/week-view': (context) =>
+            inScaffold(title: 'Demo week view', body: _DemoWeekView()),
+        '/dynamic-day-view': (context) => _DynamicDayView(),
+      },
+    );
+  }
 
-  static Widget inScaffold({
-    String title = 'Flutter Week View',
-    @required Widget body,
-  }) =>
-      Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
-        body: body,
-      );
+  static Widget inScaffold(
+      {String title = 'Flutter Week View', @required Widget body}) {
+    AppBar appBar = AppBar(
+      title: Text(title),
+    );
+
+    final appBarHeight = appBar.preferredSize.height;
+    print('appBarHeight: $appBarHeight');
+    return Scaffold(
+      appBar: appBar,
+      body: body,
+    );
+  }
 }
 
 /// The demo app body widget.
@@ -107,7 +110,7 @@ class _DemoDayView extends StatelessWidget {
     return FullWeekView(
       initialTime: const HourMinute(hour: 7),
       date: now,
-      userZoomable: false,
+      userZoomable: true,
       hoursColumnStyle: const HoursColumnStyle(width: 50),
       minimumTime: const HourMinute(hour: 6),
       events: [
@@ -139,7 +142,7 @@ class _DemoWeekView extends StatelessWidget {
     DateTime now = DateTime.now();
     DateTime date = DateTime(now.year, now.month, now.day);
     return WeekView(
-      style: const WeekViewStyle(dayViewWidth: 90.0),
+      // style: const WeekViewStyle(dayViewWidth: 90.0),
       initialTime: const HourMinute(hour: 7).atDate(DateTime.now()),
       dates: [
         date.subtract(const Duration(days: 1)),
