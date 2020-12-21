@@ -44,6 +44,10 @@ class HourMinute {
     @required DateTime dateTime,
   }) : this._internal(hour: dateTime.hour, minute: dateTime.minute);
 
+  HourMinute.fromTimeOfDay({
+    @required TimeOfDay timeOfDay,
+  }) : this._internal(hour: timeOfDay.hour, minute: timeOfDay.minute);
+
   /// Creates a new hour minute time instance from a given date time object.
   factory HourMinute.fromDuration({
     @required Duration duration,
