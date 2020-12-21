@@ -197,6 +197,15 @@ abstract class ZoomableHeadersWidgetState<W extends ZoomableHeadersWidget>
           minimumTime: minimumTime ?? widget.minimumTime,
           hourRowHeight: hourRowHeight ?? this.hourRowHeight);
 
+  /// Calculates the hour of a given top offset.
+  double calculateHour(double offset,
+      {HourMinute minimumTime, double hourRowHeight}) {
+    print('======');
+    print(offset);
+    print(this.hourRowHeight);
+    return 0;
+  }
+
   /// Calculates the widget height.
   double calculateHeight([double hourRowHeight]) =>
       calculateTopOffset(widget.maximumTime, hourRowHeight: hourRowHeight);

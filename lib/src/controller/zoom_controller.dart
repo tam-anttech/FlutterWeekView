@@ -60,8 +60,9 @@ abstract class ZoomController {
   void scaleStart() => previousZoomFactor = zoomFactor;
 
   /// Should be called when the scale operation has an update.
-  void scaleUpdate(ScaleUpdateDetails details) =>
-      changeZoomFactor(calculateZoomFactor(details.scale), details: details);
+  void scaleUpdate(ScaleUpdateDetails details, {isMin = false}) => isMin
+      ? null
+      : changeZoomFactor(calculateZoomFactor(details.scale), details: details);
 
   /// Returns the current scale.
   double get scale => zoomFactor / (previousZoomFactor * zoomCoefficient);
