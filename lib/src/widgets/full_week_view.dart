@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/src/controller/day_view.dart';
 import 'package:flutter_week_view/src/week_event.dart';
@@ -10,7 +8,6 @@ import 'package:flutter_week_view/src/utils/builders.dart';
 import 'package:flutter_week_view/src/utils/event_grid.dart';
 import 'package:flutter_week_view/src/utils/hour_minute.dart';
 import 'package:flutter_week_view/src/utils/scroll.dart';
-import 'package:flutter_week_view/src/utils/utils.dart';
 import 'package:flutter_week_view/src/widgets/hours_column.dart';
 import 'package:flutter_week_view/src/widgets/week_bar.dart';
 import 'package:flutter_week_view/src/widgets/zoomable_header_widget.dart';
@@ -29,6 +26,7 @@ class FullWeekView
   /// The day bar style.
   final DayBarStyle dayBarStyle;
 
+  /// EvenSelectCallback
   final EvenSelectCallback onEventSelect;
 
   /// Creates a new day view instance.
@@ -44,10 +42,6 @@ class FullWeekView
     TimeOfDay maximumTime,
     HourMinute initialTime,
     bool userZoomable,
-    CurrentTimeIndicatorBuilder currentTimeIndicatorBuilder,
-    HoursColumnTimeBuilder hoursColumnTimeBuilder,
-    HoursColumnTapCallback onHoursColumnTappedDown,
-    DayBarTapCallback onDayBarTappedDown,
     EvenSelectCallback onEventSelect,
   })  : date = DateTime.now(),
         events = events ?? [],
@@ -68,12 +62,9 @@ class FullWeekView
               HourMinute.MAX,
           initialTime: (initialTime ?? HourMinute.MIN).atDate(DateTime.now()),
           userZoomable: userZoomable ?? true,
-          hoursColumnTimeBuilder: hoursColumnTimeBuilder ??
-              DefaultBuilders.defaultHoursColumnTimeBuilder,
-          currentTimeIndicatorBuilder: currentTimeIndicatorBuilder ??
+          hoursColumnTimeBuilder: DefaultBuilders.defaultHoursColumnTimeBuilder,
+          currentTimeIndicatorBuilder:
               DefaultBuilders.defaultCurrentTimeIndicatorBuilder,
-          onHoursColumnTappedDown: onHoursColumnTappedDown,
-          onDayBarTappedDown: onDayBarTappedDown,
         );
 
   @override
@@ -84,6 +75,8 @@ class FullWeekView
 class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
   double maxHeight;
   bool isMinHeight;
+  Offset selectionStart;
+  Offset selectionUpdate;
 
   @override
   void initState() {
@@ -173,7 +166,8 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
                     top: calculateTopOffset(timeStartObj),
                     left: e * eventWidth,
                     child: InkWell(
-                      onTap: () => widget.onEventSelect(entry),
+                      onTap: () =>
+                          widget.onEventSelect(entry.copyWith(existed: true)),
                       child: Container(
                         width: eventWidth,
                         height: calculateTopOffset(timeEndObj) -
@@ -181,10 +175,9 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
                         child: entry.child,
                         decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color(0xffcdebef), Color(0xff40798d)],
-                            ),
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Color(0xffcdebef), Color(0xff40798d)]),
                             border: Border.all(
                                 color: const Color(0xffd8eaf3), width: 0.5)),
                       ),
@@ -203,25 +196,33 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
       updateMinZoom(widget.controller.zoomFactor);
     }
 
-    return InkWell(
-      child: GestureDetector(
-        onTapUp: (TapUpDetails details) {
-          final x = details.localPosition.dx;
-          final y = details.localPosition.dy;
-
-          calculateHour(y);
-        },
-        onVerticalDragStart: isMinScale ? (details) => print(details) : null,
-        onVerticalDragUpdate:
-            isMinScale ? (details) => print(details.localPosition) : null,
-        child: Container(
+    return GestureDetector(
+      onTapUp: (details) {
+        final startTime = calculateTimeOfDay(details.localPosition.dy);
+        final endTime = startTime.replacing(hour: startTime.hour + 1);
+        final listDay = calculateDay(details.localPosition.dx, eventWidth);
+        widget.onEventSelect(
+          WeekEvent(start: startTime, end: endTime, day: listDay),
+        );
+      },
+      onVerticalDragStart: isMinScale
+          ? (details) => selectionStart = details.localPosition
+          : null,
+      onVerticalDragUpdate: isMinScale
+          ? (details) => selectionUpdate = details.localPosition
+          : null,
+      onVerticalDragEnd: isMinScale
+          ? (details) {
+              final startTime = calculateTimeOfDay(selectionStart.dy);
+              final endTime = calculateTimeOfDay(selectionUpdate.dy);
+              widget.onEventSelect(
+                  WeekEvent(start: startTime, end: endTime, day: [0]));
+            }
+          : null,
+      child: Container(
           width: double.infinity,
           color: const Color.fromRGBO(240, 247, 250, 1),
-          child: Stack(
-            children: children,
-          ),
-        ),
-      ),
+          child: Stack(children: children)),
     );
   }
 

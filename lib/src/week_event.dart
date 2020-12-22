@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-// /// Builds an event text widget.
-// typedef EventTextBuilder = Widget Function(FlutterWeekViewEvent event,
-//     BuildContext context, DayView dayView, double height, double width);
-
 /// Represents a flutter week view event.
 class WeekEvent extends Comparable<WeekEvent> {
   /// The event start date & time.
@@ -18,24 +14,22 @@ class WeekEvent extends Comparable<WeekEvent> {
   ///
   final Widget child;
 
+  /// exist event
+  final bool existed;
+
+  final dynamic existedKey;
+
   /// Creates a new flutter week view event instance.
   WeekEvent({
     @required this.start,
     @required this.end,
     @required this.day,
     this.child,
-
-    // this.eventTextBuilder,
+    this.existed,
+    this.existedKey,
   })  : assert(start != null),
         assert(end != null),
         assert(day != null);
-
-  /// Builds the event widget.
-
-  double getTopOffset(double height) {
-    final minuteHeight = height / 840;
-    return minuteHeight * (start.hour * 60 + start.minute);
-  }
 
   @override
   int compareTo(WeekEvent other) {
@@ -47,6 +41,23 @@ class WeekEvent extends Comparable<WeekEvent> {
     final timeStart = start.toString();
     final timeEnd = end.toString();
     final listDay = day.toString();
-    return 'Start: $timeStart - End: $timeEnd - Day: $listDay';
+    return 'Start: $timeStart\nEnd: $timeEnd\nDay: $listDay\nExisted: $existed\nExistedKey: $existedKey';
   }
+
+  WeekEvent copyWith({
+    TimeOfDay start,
+    TimeOfDay end,
+    List<int> day,
+    Widget child,
+    bool existed,
+    dynamic existedKey,
+  }) =>
+      WeekEvent(
+        start: start ?? this.start,
+        end: end ?? this.end,
+        day: day ?? this.day,
+        child: child ?? this.child,
+        existed: existed ?? this.existed,
+        existedKey: existedKey ?? this.existedKey,
+      );
 }
