@@ -22,11 +22,20 @@ class _FlutterWeekViewDemoApp extends StatelessWidget {
           WeekEvent(
               start: const TimeOfDay(hour: 8, minute: 25),
               end: const TimeOfDay(hour: 9, minute: 25),
-              day: [0, 1]),
+              day: [0],
+              existedKey: 'qwiuehfiuwhegiuwhgh'),
+          WeekEvent(
+              start: const TimeOfDay(hour: 8, minute: 25),
+              end: const TimeOfDay(hour: 10, minute: 0),
+              day: [1]),
           WeekEvent(
               start: const TimeOfDay(hour: 12, minute: 25),
               end: const TimeOfDay(hour: 14, minute: 55),
               day: [2]),
+          WeekEvent(
+              start: const TimeOfDay(hour: 11, minute: 0),
+              end: const TimeOfDay(hour: 17, minute: 15),
+              day: [5]),
           WeekEvent(
               start: const TimeOfDay(hour: 11, minute: 0),
               end: const TimeOfDay(hour: 16, minute: 15),

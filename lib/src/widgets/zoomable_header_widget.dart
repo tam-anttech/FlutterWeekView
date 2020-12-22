@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -198,12 +199,17 @@ abstract class ZoomableHeadersWidgetState<W extends ZoomableHeadersWidget>
           hourRowHeight: hourRowHeight ?? this.hourRowHeight);
 
   /// Calculates the hour of a given top offset.
-  double calculateHour(double offset,
-      {HourMinute minimumTime, double hourRowHeight}) {
-    print('======');
-    print(offset);
-    print(this.hourRowHeight);
-    return 0;
+  TimeOfDay calculateTimeOfDay(double offset, {double hourRowHeight}) {
+    final ratio = offset / this.hourRowHeight;
+    final h = ratio.floor() + widget.minimumTime.hour;
+    final m = (ratio - ratio.floor()) * 60 + widget.minimumTime.minute;
+    return TimeOfDay(hour: h, minute: m.floor());
+  }
+
+  List<int> calculateDay(double offset, double eventWidth) {
+    List<int> listDay = [];
+    listDay.add((offset / eventWidth).floor());
+    return listDay;
   }
 
   /// Calculates the widget height.
