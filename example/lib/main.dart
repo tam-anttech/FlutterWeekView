@@ -20,28 +20,21 @@ class _FlutterWeekViewDemoApp extends StatelessWidget {
         minimumTime: const TimeOfDay(hour: 6, minute: 0),
         events: [
           WeekEvent(
-              start: const TimeOfDay(hour: 8, minute: 25),
-              end: const TimeOfDay(hour: 9, minute: 25),
-              day: [0],
-              existedKey: 'qwiuehfiuwhegiuwhgh'),
-          WeekEvent(
-              start: const TimeOfDay(hour: 8, minute: 25),
-              end: const TimeOfDay(hour: 10, minute: 0),
-              day: [1]),
-          WeekEvent(
-              start: const TimeOfDay(hour: 12, minute: 25),
-              end: const TimeOfDay(hour: 14, minute: 55),
-              day: [2]),
-          WeekEvent(
-              start: const TimeOfDay(hour: 11, minute: 0),
-              end: const TimeOfDay(hour: 17, minute: 15),
-              day: [5]),
-          WeekEvent(
-              start: const TimeOfDay(hour: 11, minute: 0),
-              end: const TimeOfDay(hour: 16, minute: 15),
-              day: [5, 6])
+              start: const TimeOfDay(hour: 6, minute: 0),
+              end: const TimeOfDay(hour: 23, minute: 59),
+              day: [0, 2, 4, 6],
+              onPress: (event) => print(event),
+              onLongPress: (event) => print('onLongPress: $event'),
+              child: LayoutBuilder(
+                builder: (context, constraints) => Icon(
+                  Icons.ac_unit,
+                  size: constraints.maxHeight < 30 ? constraints.maxHeight : 30,
+                  color: Colors.white,
+                ),
+              )),
         ],
-        onEventSelect: (event) => print(event.toString()),
+        onPressSelect: (event) => print(event.toString()),
+        onDragSelect: (event) => print('onDragSelect:   $event'),
       ),
     );
   }
