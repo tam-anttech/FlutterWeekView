@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 /// Represents a flutter week view event.
 class WeekEvent extends Comparable<WeekEvent> {
+  final String id;
+
   /// The event start date & time.
   final TimeOfDay start;
 
@@ -14,19 +16,19 @@ class WeekEvent extends Comparable<WeekEvent> {
   ///
   final Widget child;
 
-  /// exist event
-  final bool existed;
+  final Function onPress;
 
-  final dynamic existedKey;
+  final Function onLongPress;
 
   /// Creates a new flutter week view event instance.
   WeekEvent({
+    this.id,
     @required this.start,
     @required this.end,
     @required this.day,
     this.child,
-    this.existed,
-    this.existedKey,
+    this.onPress,
+    this.onLongPress,
   })  : assert(start != null),
         assert(end != null),
         assert(day != null);
@@ -41,7 +43,7 @@ class WeekEvent extends Comparable<WeekEvent> {
     final timeStart = start.toString();
     final timeEnd = end.toString();
     final listDay = day.toString();
-    return 'Start: $timeStart\nEnd: $timeEnd\nDay: $listDay\nExisted: $existed\nExistedKey: $existedKey';
+    return 'WeekEvent(id: @id - Start: $timeStart - End: $timeEnd - Day: $listDay)';
   }
 
   WeekEvent copyWith({
@@ -49,15 +51,15 @@ class WeekEvent extends Comparable<WeekEvent> {
     TimeOfDay end,
     List<int> day,
     Widget child,
-    bool existed,
-    dynamic existedKey,
+    Function onPress,
+    Function onLongPress,
   }) =>
       WeekEvent(
         start: start ?? this.start,
         end: end ?? this.end,
         day: day ?? this.day,
         child: child ?? this.child,
-        existed: existed ?? this.existed,
-        existedKey: existedKey ?? this.existedKey,
+        onPress: onPress ?? this.onPress,
+        onLongPress: onLongPress ?? this.onLongPress,
       );
 }

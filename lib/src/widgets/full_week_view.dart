@@ -27,7 +27,10 @@ class FullWeekView
   final DayBarStyle dayBarStyle;
 
   /// EvenSelectCallback
-  final EvenSelectCallback onEventSelect;
+  final EvenSelectCallback onPressSelect;
+
+  /// EvenSelectCallback
+  final EvenSelectCallback onDragSelect;
 
   /// Creates a new day view instance.
   FullWeekView({
@@ -42,11 +45,13 @@ class FullWeekView
     TimeOfDay maximumTime,
     HourMinute initialTime,
     bool userZoomable,
-    EvenSelectCallback onEventSelect,
+    EvenSelectCallback onPressSelect,
+    EvenSelectCallback onDragSelect,
   })  : date = DateTime.now(),
         events = events ?? [],
         dayBarStyle = dayBarStyle ?? DayBarStyle.fromDate(date: DateTime.now()),
-        onEventSelect = onEventSelect,
+        onPressSelect = onPressSelect,
+        onDragSelect = onDragSelect,
         super(
           style: style ?? DayViewStyle.fromDate(date: DateTime.now()),
           hoursColumnStyle: hoursColumnStyle ?? const HoursColumnStyle(),
@@ -74,7 +79,6 @@ class FullWeekView
 /// The day view state.
 class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
   double maxHeight;
-  bool isMinHeight;
   Offset selectionStart;
   Offset selectionUpdate;
 
@@ -130,10 +134,15 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     }
     return GestureDetector(
       onScaleStart: (_) => widget.controller.scaleStart(),
-      onScaleUpdate: widget.controller.scaleUpdate,
+      onScaleUpdate: (detail) {
+        widget.controller.scaleUpdate(detail);
+      },
       child: LayoutBuilder(
         builder: (context, constraints) {
           maxHeight ??= constraints.maxHeight - widget.style.headerSize;
+          if (calculateHeight() <= maxHeight) {
+            updateMinZoom(widget.controller.zoomFactor);
+          }
           return mainWidget;
         },
       ),
@@ -167,7 +176,10 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
                     left: e * eventWidth,
                     child: InkWell(
                       onTap: () =>
-                          widget.onEventSelect(entry.copyWith(existed: true)),
+                          entry.onPress != null ? entry.onPress(entry) : null,
+                      onLongPress: () => entry.onLongPress != null
+                          ? entry.onLongPress(entry)
+                          : null,
                       child: Container(
                         width: eventWidth,
                         height: calculateTopOffset(timeEndObj) -
@@ -191,17 +203,13 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
 
     final curMaxHeight = maxHeight ?? MediaQuery.of(context).size.height;
     final isMinScale = calculateHeight() <= curMaxHeight;
-    if (isMinScale &&
-        widget.controller.minZoom < widget.controller.zoomFactor) {
-      updateMinZoom(widget.controller.zoomFactor);
-    }
 
     return GestureDetector(
       onTapUp: (details) {
         final startTime = calculateTimeOfDay(details.localPosition.dy);
         final endTime = startTime.replacing(hour: startTime.hour + 1);
         final listDay = calculateDay(details.localPosition.dx, eventWidth);
-        widget.onEventSelect(
+        widget.onPressSelect(
           WeekEvent(start: startTime, end: endTime, day: listDay),
         );
       },
@@ -215,8 +223,11 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
           ? (details) {
               final startTime = calculateTimeOfDay(selectionStart.dy);
               final endTime = calculateTimeOfDay(selectionUpdate.dy);
-              widget.onEventSelect(
-                  WeekEvent(start: startTime, end: endTime, day: [0]));
+              widget.onDragSelect(WeekEvent(
+                start: startTime,
+                end: endTime,
+                day: _getListDay(eventWidth),
+              ));
             }
           : null,
       child: Container(
@@ -274,5 +285,16 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
       eventsGrid.processEvents(
           widget.hoursColumnStyle.width, eventsColumnWidth);
     }
+  }
+
+  List<int> _getListDay(double eventWidth) {
+    List<int> list = [];
+    int start = (selectionStart.dx / eventWidth).floor();
+    int end = (selectionUpdate.dx / eventWidth).floor();
+    while (start <= end) {
+      list.add(start);
+      start += 1;
+    }
+    return list;
   }
 }
