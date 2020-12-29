@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/src/controller/day_view.dart';
 import 'package:flutter_week_view/src/week_event.dart';
@@ -28,6 +27,9 @@ class FullWeekView
   /// The day bar style.
   final DayBarStyle dayBarStyle;
 
+  /// Event Color
+  final List<Color> eventColors;
+
   /// EvenSelectCallback
   final EvenSelectCallback onPressSelect;
 
@@ -41,6 +43,7 @@ class FullWeekView
     DayViewStyle style,
     HoursColumnStyle hoursColumnStyle,
     DayBarStyle dayBarStyle,
+    List<Color> eventColors,
     DayViewController controller,
     bool inScrollableWidget,
     TimeOfDay minimumTime,
@@ -54,6 +57,8 @@ class FullWeekView
         dayBarStyle = dayBarStyle ?? DayBarStyle.fromDate(date: DateTime.now()),
         onPressSelect = onPressSelect,
         onDragSelect = onDragSelect,
+        eventColors =
+            eventColors ?? [const Color(0xffcdebef), const Color(0xff40798d)],
         super(
           style: style ?? DayViewStyle.fromDate(date: DateTime.now()),
           hoursColumnStyle: hoursColumnStyle ?? const HoursColumnStyle(),
@@ -185,6 +190,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     final dragWidth =
         MediaQuery.of(context).size.width - widget.hoursColumnStyle.width;
     final eventWidth = dragWidth / 7;
+    widget.events.sort((a, b) => a.start.hour > b.start.hour ? 1 : 0);
     final children = widget.events
         .map((entry) {
           final timeStartObj = HourMinute.fromTimeOfDay(timeOfDay: entry.start);
@@ -205,10 +211,10 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
                             calculateTopOffset(timeStartObj),
                         child: entry.child,
                         decoration: BoxDecoration(
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
-                                colors: [Color(0xffcdebef), Color(0xff40798d)]),
+                                colors: widget.eventColors),
                             border: Border.all(
                                 color: const Color(0xffd8eaf3), width: 0.5)),
                       ),
@@ -308,10 +314,10 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
 
   Widget indicatorBuilder(double eventWidth) {
     final left =
-        (min(selectionUpdate.dx, selectionStart.dx) / eventWidth).round() *
+        (min(selectionUpdate.dx, selectionStart.dx) / eventWidth).floor() *
             eventWidth;
     final width =
-        (max(selectionUpdate.dx, selectionStart.dx) / eventWidth).round() *
+        (max(selectionUpdate.dx, selectionStart.dx) / eventWidth).floor() *
             eventWidth;
     return Positioned(
       top: min(selectionStart.dy, selectionUpdate.dy),
