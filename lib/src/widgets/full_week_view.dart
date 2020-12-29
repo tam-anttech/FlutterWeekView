@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_week_view/src/controller/day_view.dart';
 import 'package:flutter_week_view/src/week_event.dart';
@@ -62,11 +64,11 @@ class FullWeekView
               ) ??
               HourMinute.MIN,
           maximumTime: HourMinute.fromTimeOfDay(
-                timeOfDay: maximumTime ?? const TimeOfDay(hour: 24, minute: 0),
+                timeOfDay: maximumTime ?? const TimeOfDay(hour: 23, minute: 59),
               ) ??
               HourMinute.MAX,
           initialTime: (initialTime ?? HourMinute.MIN).atDate(DateTime.now()),
-          userZoomable: userZoomable ?? true,
+          userZoomable: userZoomable ?? false,
           hoursColumnTimeBuilder: DefaultBuilders.defaultHoursColumnTimeBuilder,
           currentTimeIndicatorBuilder:
               DefaultBuilders.defaultCurrentTimeIndicatorBuilder,
@@ -103,6 +105,16 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     widget.controller.minZoom = minZoom;
   }
 
+  void updateHourRowHeight(double maxHeight) {
+    final distance =
+        (widget.maximumTime.hour + widget.maximumTime.minute / 60) -
+            (widget.minimumTime.hour + widget.minimumTime.minute / 60);
+    final newHourRowHeight = maxHeight / distance;
+    if (hourRowHeight > newHourRowHeight) {
+      hourRowHeight = newHourRowHeight;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget mainWidget = createMainWidget();
@@ -130,7 +142,13 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     }
 
     if (!isZoomable) {
-      return mainWidget;
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          maxHeight ??= constraints.maxHeight - widget.style.headerSize;
+          updateHourRowHeight(maxHeight);
+          return mainWidget;
+        },
+      );
     }
     return GestureDetector(
       onScaleStart: (_) => widget.controller.scaleStart(),
@@ -160,7 +178,8 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
   }
 
   @override
-  DayViewStyle get currentDayViewStyle => widget.style;
+  DayViewStyle get currentDayViewStyle =>
+      widget.style.copyWith(hourRowHeight: hourRowHeight);
 
   Widget weekBuilder() {
     final dragWidth =
@@ -204,6 +223,10 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     final curMaxHeight = maxHeight ?? MediaQuery.of(context).size.height;
     final isMinScale = calculateHeight() <= curMaxHeight;
 
+    if (selectionStart != null) {
+      children.add(indicatorBuilder(eventWidth));
+    }
+
     return GestureDetector(
       onTapUp: (details) {
         final startTime = calculateTimeOfDay(details.localPosition.dy);
@@ -213,21 +236,30 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
           WeekEvent(start: startTime, end: endTime, day: listDay),
         );
       },
-      onVerticalDragStart: isMinScale
-          ? (details) => selectionStart = details.localPosition
+      onPanStart: isMinScale
+          ? (details) => setState(() {
+                selectionStart = details.localPosition;
+              })
           : null,
-      onVerticalDragUpdate: isMinScale
-          ? (details) => selectionUpdate = details.localPosition
+      onPanUpdate: isMinScale
+          ? (details) => setState(() {
+                selectionUpdate = details.localPosition;
+              })
           : null,
-      onVerticalDragEnd: isMinScale
+      onPanEnd: isMinScale
           ? (details) {
-              final startTime = calculateTimeOfDay(selectionStart.dy);
-              final endTime = calculateTimeOfDay(selectionUpdate.dy);
+              final startTime = calculateTimeOfDay(
+                  min(selectionStart.dy, selectionUpdate.dy));
+              final endTime = calculateTimeOfDay(
+                  max(selectionStart.dy, selectionUpdate.dy));
               widget.onDragSelect(WeekEvent(
                 start: startTime,
                 end: endTime,
                 day: _getListDay(eventWidth),
               ));
+              setState(() {
+                selectionStart = null;
+              });
             }
           : null,
       child: Container(
@@ -274,6 +306,27 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     );
   }
 
+  Widget indicatorBuilder(double eventWidth) {
+    final left =
+        (min(selectionUpdate.dx, selectionStart.dx) / eventWidth).round() *
+            eventWidth;
+    final width =
+        (max(selectionUpdate.dx, selectionStart.dx) / eventWidth).round() *
+            eventWidth;
+    return Positioned(
+      top: min(selectionStart.dy, selectionUpdate.dy),
+      left: left,
+      child: Container(
+        width: (width - left).abs() + eventWidth,
+        height: ((selectionUpdate.dy ?? selectionStart.dy) - selectionStart.dy)
+            .abs(),
+        decoration: BoxDecoration(
+            color: const Color(0x33cdebef),
+            border: Border.all(color: const Color(0xff40798d), width: 0.5)),
+      ),
+    );
+  }
+
   /// Creates the events draw properties and add them to the current list.
   void createEventsDrawProperties() {
     EventGrid eventsGrid = EventGrid();
@@ -289,8 +342,9 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
 
   List<int> _getListDay(double eventWidth) {
     List<int> list = [];
-    int start = (selectionStart.dx / eventWidth).floor();
-    int end = (selectionUpdate.dx / eventWidth).floor();
+    int start =
+        (min(selectionStart.dx, selectionUpdate.dx) / eventWidth).floor();
+    int end = (max(selectionStart.dx, selectionUpdate.dx) / eventWidth).floor();
     while (start <= end) {
       list.add(start);
       start += 1;

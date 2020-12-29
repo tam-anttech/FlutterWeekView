@@ -17,12 +17,12 @@ class _FlutterWeekViewDemoApp extends StatelessWidget {
         title: const Text('Demo'),
       ),
       body: FullWeekView(
-        minimumTime: const TimeOfDay(hour: 6, minute: 0),
+        minimumTime: const TimeOfDay(hour: 0, minute: 0),
         events: [
           WeekEvent(
-              start: const TimeOfDay(hour: 6, minute: 0),
-              end: const TimeOfDay(hour: 23, minute: 59),
-              day: [0, 2, 4, 6],
+              start: const TimeOfDay(hour: 12, minute: 0),
+              end: const TimeOfDay(hour: 15, minute: 30),
+              day: [0, 2, 4],
               onPress: (event) => print(event),
               onLongPress: (event) => print('onLongPress: $event'),
               child: LayoutBuilder(
