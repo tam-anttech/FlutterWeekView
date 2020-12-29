@@ -15,7 +15,6 @@ import 'package:flutter_week_view/src/widgets/zoomable_header_widget.dart';
 
 typedef EvenSelectCallback = Function(WeekEvent event);
 
-/// A (scrollable) day view which is able to display events, zoom and un-zoom and more !
 class FullWeekView
     extends ZoomableHeadersWidget<DayViewStyle, DayViewController> {
   /// The events.
@@ -27,7 +26,7 @@ class FullWeekView
   /// The day bar style.
   final DayBarStyle dayBarStyle;
 
-  /// Event Color
+  /// Event's Colors
   final List<Color> eventColors;
 
   /// EvenSelectCallback
@@ -110,6 +109,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     widget.controller.minZoom = minZoom;
   }
 
+  /// update HourRowHeigh by maxHeight of FullWeekView (make time fixed with height)
   void updateHourRowHeight(double maxHeight) {
     final distance =
         (widget.maximumTime.hour + widget.maximumTime.minute / 60) -
@@ -186,6 +186,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
   DayViewStyle get currentDayViewStyle =>
       widget.style.copyWith(hourRowHeight: hourRowHeight);
 
+  /// Creates all event wiget, indicator Box and action drag selection
   Widget weekBuilder() {
     final dragWidth =
         MediaQuery.of(context).size.width - widget.hoursColumnStyle.width;
@@ -270,7 +271,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
           : null,
       child: Container(
           width: double.infinity,
-          color: const Color.fromRGBO(240, 247, 250, 1),
+          color: widget.style.backgroundColor,
           child: Stack(children: children)),
     );
   }
@@ -312,6 +313,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     );
   }
 
+  /// Create indicator box wiget
   Widget indicatorBuilder(double eventWidth) {
     final left =
         (min(selectionUpdate.dx, selectionStart.dx) / eventWidth).floor() *
@@ -346,6 +348,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
     }
   }
 
+  /// Get list Day of week
   List<int> _getListDay(double eventWidth) {
     List<int> list = [];
     int start =
