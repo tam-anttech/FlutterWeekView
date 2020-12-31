@@ -203,12 +203,12 @@ abstract class ZoomableHeadersWidgetState<W extends ZoomableHeadersWidget>
     final ratio = offset / this.hourRowHeight;
     final h = ratio.floor() + widget.minimumTime.hour;
     final m = (ratio - ratio.floor()) * 60 + widget.minimumTime.minute;
-    return TimeOfDay(hour: h, minute: m.floor());
+    return TimeOfDay(hour: h == 24 ? 23 : h, minute: h == 24 ? 59 : m.floor());
   }
 
   List<int> calculateDay(double offset, double eventWidth) {
     List<int> listDay = [];
-    listDay.add((offset / eventWidth).floor());
+    listDay.add((offset / eventWidth).floor() + 1);
     return listDay;
   }
 
