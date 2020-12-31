@@ -199,7 +199,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
           return entry.day
               .map((e) => Positioned(
                     top: calculateTopOffset(timeStartObj),
-                    left: e * eventWidth,
+                    left: (e - 1) * eventWidth,
                     child: InkWell(
                       onTap: () =>
                           entry.onPress != null ? entry.onPress(entry) : null,
@@ -246,11 +246,15 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
       onPanStart: isMinScale
           ? (details) => setState(() {
                 selectionStart = details.localPosition;
+                selectionUpdate = details.localPosition;
               })
           : null,
       onPanUpdate: isMinScale
           ? (details) => setState(() {
-                selectionUpdate = details.localPosition;
+                selectionUpdate = Offset(
+                  max(details.localPosition.dx, 0),
+                  max(details.localPosition.dy, 0),
+                );
               })
           : null,
       onPanEnd: isMinScale
@@ -355,7 +359,7 @@ class _FullWeekViewState extends ZoomableHeadersWidgetState<FullWeekView> {
         (min(selectionStart.dx, selectionUpdate.dx) / eventWidth).floor();
     int end = (max(selectionStart.dx, selectionUpdate.dx) / eventWidth).floor();
     while (start <= end) {
-      list.add(start);
+      list.add(start + 1);
       start += 1;
     }
     return list;

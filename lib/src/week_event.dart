@@ -11,9 +11,11 @@ class WeekEvent extends Comparable<WeekEvent> {
   final TimeOfDay end;
 
   /// day of week
+  ///
+  /// (1 = Monday, 2 = Tuesday, 3 = Wednesday, 4 = Thursday, 5 = Friday, 6 = Saturday, 7 = Sunday)
   final List<int> day;
 
-  ///
+  /// Custom Widget inside event
   final Widget child;
 
   final Function onPress;

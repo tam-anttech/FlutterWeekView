@@ -22,7 +22,7 @@ class _FlutterWeekViewDemoApp extends StatelessWidget {
           WeekEvent(
               start: const TimeOfDay(hour: 12, minute: 0),
               end: const TimeOfDay(hour: 15, minute: 30),
-              day: [0, 1, 2, 4],
+              day: [1, 2, 3, 4],
               onPress: (event) => print(event),
               onLongPress: (event) => print('onLongPress: $event'),
               child: LayoutBuilder(
@@ -35,7 +35,7 @@ class _FlutterWeekViewDemoApp extends StatelessWidget {
           WeekEvent(
               start: const TimeOfDay(hour: 8, minute: 0),
               end: const TimeOfDay(hour: 15, minute: 30),
-              day: [0, 2],
+              day: [1, 3],
               onPress: (event) => print(event),
               onLongPress: (event) => print('onLongPress: $event'),
               child: LayoutBuilder(
